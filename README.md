@@ -1,6 +1,10 @@
 # Pursuing Coding
 
-一个纯静态的编程语言学习入口页，用于公开发布到 GitHub Pages。
+一个纯静态的编程语言学习入口页，作为 `Pursuing Coding` 组织首页发布到 GitHub Pages。
+
+## 线上地址
+
+- 组织首页：<https://pursuing-coding.github.io/>
 
 ## 当前入口
 
@@ -9,9 +13,11 @@
 
 页面只负责跳转到已有学习工具，不嵌入课程、不代理内容、不包含私人礼物项目。
 
-## 发布
+## 发布配置
 
-直接把本文件夹上传到 GitHub 仓库，并在仓库 `Settings -> Pages` 中启用 GitHub Pages 即可。入口文件是：
+- 仓库：`pursuing-coding/pursuing-coding.github.io`
+- Pages：`main /`
+- 入口文件：
 
 ```text
 index.html
