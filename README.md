@@ -15,7 +15,7 @@
 
 ## 发布配置
 
-- 仓库：`pursuing-coding/pursuing-coding.github.io`
+- 仓库：`pursuing-coding/pursuing-codinghub.io`
 - Pages：`main /`
 - 入口文件：
 
