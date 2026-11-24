@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Pursuing Coding 连接 C++ 与 Java 两个在线学习工具。">
+  <meta name="description" content="Pursuing Coding 提供 C++、Java、Python 和 C# 的交互式编程课程。">
   <meta name="theme-color" content="#f5f7f2">
   <title>Pursuing Coding</title>
   <style>
@@ -37,8 +37,10 @@
     }
 
     body {
-      min-height: 100%;
+      min-height: 100svh;
       margin: 0;
+      display: flex;
+      flex-direction: column;
       color: var(--ink);
       background: #f5f7f2;
       overflow-x: hidden;
@@ -64,16 +66,16 @@
     .page {
       position: relative;
       z-index: 1;
-      min-height: 100svh;
+      flex: 1;
       display: grid;
       place-items: center;
-      padding: clamp(28px, 5vw, 72px);
+      padding: clamp(16px, 3vw, 42px) clamp(20px, 5vw, 72px);
     }
 
     .corner-brand {
-      position: fixed;
-      top: clamp(20px, 3vw, 34px);
-      left: clamp(20px, 4vw, 52px);
+      position: relative;
+      align-self: flex-start;
+      margin: clamp(16px, 3vw, 32px) clamp(20px, 4vw, 52px) 0;
       z-index: 2;
       display: inline-flex;
       align-items: center;
@@ -99,12 +101,11 @@
     }
 
     .signature {
-      position: fixed;
-      right: clamp(20px, 3vw, 36px);
-      bottom: clamp(16px, 3vw, 30px);
+      position: relative;
+      align-self: flex-end;
       z-index: 2;
-      margin: 0;
-      color: rgba(21, 32, 43, 0.36);
+      margin: 0 clamp(20px, 3vw, 36px) clamp(16px, 3vw, 30px);
+      color: #607080;
       font-size: 12px;
       font-weight: 500;
       line-height: 1;
@@ -132,7 +133,7 @@
 
     .course-card {
       position: relative;
-      min-height: 310px;
+      min-height: 240px;
       padding: clamp(22px, 2.6vw, 28px);
       border: 1px solid rgba(21, 32, 43, 0.12);
       border-radius: var(--radius);
@@ -176,7 +177,11 @@
       border-color: color-mix(in srgb, var(--accent), transparent 30%);
       background: rgba(255, 255, 255, 0.92);
       box-shadow: 0 28px 70px rgba(32, 44, 58, 0.18);
-      outline: none;
+    }
+
+    .course-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
     }
 
     .course-card.cpp {
@@ -185,6 +190,14 @@
 
     .course-card.java {
       --accent: var(--amber);
+    }
+
+    .course-card.python {
+      --accent: var(--teal);
+    }
+
+    .course-card.csharp {
+      --accent: var(--rose);
     }
 
     .course-top,
@@ -272,34 +285,23 @@
       line-height: 1.2;
     }
 
-    @media (max-width: 980px) {
+    @media (max-width: 620px) {
       .course-grid {
         grid-template-columns: 1fr;
-      }
-
-      .course-card {
-        min-height: 300px;
       }
     }
 
     @media (max-width: 640px) {
       .page {
-        padding: 76px 20px 28px;
-      }
-
-      .corner-brand {
-        top: 20px;
-        left: 20px;
+        padding: 24px 20px;
       }
 
       .signature {
-        right: 20px;
-        bottom: 16px;
         font-size: 11px;
       }
 
       .course-card {
-        min-height: 285px;
+        min-height: 220px;
         padding: 18px;
       }
 
@@ -337,7 +339,6 @@
     <span class="corner-brand-mark">PC</span>
     <span>Pursuing Coding</span>
   </a>
-  <p class="signature">Developed by WJH</p>
 
   <div class="page">
     <main class="hero">
@@ -358,7 +359,7 @@
               <p>从编译模型、类型系统到 STL 与现代 C++，进入完整的浏览器课程实验室。</p>
             </div>
             <div class="course-tags" aria-label="C++ 课程标签">
-              <span class="tag">12 章</span>
+              <span class="tag">13 章</span>
               <span class="tag">代码练习</span>
               <span class="tag">在线运行</span>
             </div>
@@ -384,15 +385,53 @@
               <span class="tag">学习路径</span>
             </div>
           </a>
+
+          <a class="course-card python" href="https://pursuing-coding.github.io/python-learn/" target="_blank" rel="noreferrer">
+            <div class="course-top">
+              <span class="language-badge">Py</span>
+              <span class="external-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 17 17 7"></path><path d="M9 7h8v8"></path></svg>
+              </span>
+            </div>
+            <div class="course-body">
+              <h2>Python 在线实验室</h2>
+              <p>从基础语法和集合起步，练习文件处理、自动化测试与综合项目。</p>
+            </div>
+            <div class="course-tags" aria-label="Python 课程标签">
+              <span class="tag">33 章</span>
+              <span class="tag">5 个阶段</span>
+              <span class="tag">在线运行</span>
+            </div>
+          </a>
+
+          <a class="course-card csharp" href="https://pursuing-coding.github.io/c-sharp-learn/" target="_blank" rel="noreferrer">
+            <div class="course-top">
+              <span class="language-badge">C#</span>
+              <span class="external-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 17 17 7"></path><path d="M9 7h8v8"></path></svg>
+              </span>
+            </div>
+            <div class="course-body">
+              <h2>C# 闯关学习</h2>
+              <p>通过浏览器中的控制台练习学习循环、集合和面向对象，逐步完成小项目。</p>
+            </div>
+            <div class="course-tags" aria-label="C# 课程标签">
+              <span class="tag">34 关</span>
+              <span class="tag">6 个阶段</span>
+              <span class="tag">浏览器模拟</span>
+            </div>
+          </a>
         </div>
       </section>
     </main>
   </div>
+  <footer class="signature">Developed by WJH</footer>
 
   <script>
     (function () {
       var canvas = document.getElementById("scene");
       var context = canvas.getContext("2d");
+      if (!context) return;
       var mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
       var tokens = [
         "int main()",
@@ -413,7 +452,11 @@
       var height = 0;
       var pointer = { x: 0, y: 0 };
       var animationFrame = 0;
-      var isDrawing = false;
+      function requestDraw() {
+        if (!document.hidden && !animationFrame) {
+          animationFrame = window.requestAnimationFrame(draw);
+        }
+      }
 
       function resize() {
         var ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -425,13 +468,11 @@
         canvas.style.height = height + "px";
         context.setTransform(ratio, 0, 0, ratio, 0, 0);
         createPoints();
-        if (!isDrawing) {
-          draw();
-        }
+        requestDraw();
       }
 
       function createPoints() {
-        var count = Math.max(34, Math.floor((width * height) / 28000));
+        var count = Math.min(80, Math.max(24, Math.floor((width * height) / 28000)));
         points = Array.from({ length: count }, function (_, index) {
           return {
             x: Math.random() * width,
@@ -445,7 +486,7 @@
       }
 
       function draw() {
-        isDrawing = true;
+        animationFrame = 0;
         context.clearRect(0, 0, width, height);
         context.fillStyle = "#f5f7f2";
         context.fillRect(0, 0, width, height);
@@ -508,25 +549,26 @@
           }
         }
 
-        if (!mediaQuery.matches) {
-          animationFrame = window.requestAnimationFrame(draw);
-        } else {
-          isDrawing = false;
-        }
+        if (!mediaQuery.matches) requestDraw();
       }
 
       window.addEventListener("resize", resize);
       window.addEventListener("pointermove", function (event) {
+        if (mediaQuery.matches) return;
         pointer.x = event.clientX;
         pointer.y = event.clientY;
       }, { passive: true });
 
       resize();
 
-      mediaQuery.addEventListener("change", function () {
-        window.cancelAnimationFrame(animationFrame);
-        isDrawing = false;
-        draw();
+      mediaQuery.addEventListener("change", requestDraw);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+          window.cancelAnimationFrame(animationFrame);
+          animationFrame = 0;
+        } else {
+          requestDraw();
+        }
       });
     }());
   </script>
