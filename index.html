@@ -123,32 +123,19 @@
       min-width: 0;
     }
 
-    .board-header {
-      min-height: 44px;
-      margin-inline: var(--gutter);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .board-header h1 {
-      margin: 0;
-      font-size: clamp(22px, 2.6vw, 34px);
-      font-weight: 650;
-      letter-spacing: -0.035em;
-    }
-
     .board-nav {
       display: flex;
-      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      gap: clamp(12px, 2.4vw, 26px);
+      margin: 2px var(--gutter) 0;
     }
 
     .board-nav[hidden] {
       display: none;
     }
 
-    .board-nav button {
+    .board-arrow {
       display: grid;
       place-items: center;
       width: 44px;
@@ -160,20 +147,48 @@
       cursor: pointer;
     }
 
-    .board-nav button:hover:not([aria-disabled="true"]) {
+    .board-arrow:hover {
       background: #fff;
       border-color: var(--muted);
     }
 
-    .board-nav button[aria-disabled="true"] {
-      opacity: 0.42;
-      cursor: default;
+    .course-positions {
+      display: flex;
+      align-items: center;
     }
 
-    .board-nav button:focus-visible,
-    .course-grid:focus-visible {
+    .course-position {
+      display: grid;
+      place-items: center;
+      padding: 0;
+      width: 28px;
+      height: 44px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #84928e;
+      cursor: pointer;
+    }
+
+    .course-position::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 5px;
+      background: currentColor;
+    }
+
+    .course-position[aria-current="true"] {
+      color: var(--ink);
+    }
+
+    .course-position[aria-current="true"]::before {
+      width: 18px;
+    }
+
+    .board-nav button:focus-visible {
       outline: 2px solid var(--blue);
-      outline-offset: -3px;
+      outline-offset: 2px;
     }
 
     .board-nav svg {
@@ -182,24 +197,63 @@
     }
 
     .course-grid {
-      --gap: clamp(12px, 2vw, 22px);
       display: grid;
       grid-auto-flow: column;
-      grid-auto-columns: clamp(278px, 32vw, 360px);
-      gap: var(--gap);
+      grid-auto-columns: min(416px, 80%);
+      gap: 16px;
       overflow-x: auto;
-      overscroll-behavior-inline: contain;
       scroll-snap-type: x mandatory;
       scroll-padding-inline: var(--gutter);
-      scrollbar-width: thin;
-      scrollbar-color: #b6c0bc transparent;
-      padding: 14px var(--gutter) 22px;
+      padding: 20px var(--gutter) 28px;
+    }
+
+    .course-grid.is-carousel {
+      grid-auto-flow: row;
+      grid-template-columns: minmax(0, 1fr);
+      grid-auto-columns: auto;
+      gap: 0;
+      overflow: clip;
+      scroll-snap-type: none;
+      perspective: 1100px;
+      perspective-origin: 50% 48%;
+      overscroll-behavior-inline: contain;
+      touch-action: pan-y pinch-zoom;
+      user-select: none;
+    }
+
+    .is-carousel .course-card {
+      width: min(416px, calc(100% - clamp(40px, 10vw, 80px)));
+      grid-area: 1 / 1;
+      justify-self: center;
+      cursor: grab;
+    }
+
+    .is-carousel .course-card.is-current {
+      cursor: pointer;
+    }
+
+    .is-carousel.is-dragging .course-card {
+      cursor: grabbing;
+    }
+
+    .is-carousel .course-card:not(.is-current) .external-mark {
+      visibility: hidden;
+    }
+
+    @media (max-width: 640px) {
+      .course-grid.is-carousel {
+        padding-inline: 0;
+      }
+
+      .is-carousel .course-card {
+        width: min(416px, calc(100% - clamp(74px, 21vw, 132px)));
+      }
     }
 
     .course-card {
       position: relative;
       min-width: 0;
-      min-height: clamp(226px, 39svh, 340px);
+      min-height: clamp(246px, 47svh, 350px);
       padding: clamp(18px, 2.2vw, 28px);
       scroll-snap-align: start;
       border: 1px solid rgba(21, 32, 43, 0.12);
@@ -213,11 +267,7 @@
       grid-template-rows: auto 1fr auto;
       align-content: start;
       gap: clamp(14px, 2.8svh, 26px);
-      transition:
-        transform 180ms ease,
-        border-color 180ms ease,
-        box-shadow 180ms ease,
-        background 180ms ease;
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
 
     .course-card::before {
@@ -237,11 +287,10 @@
       pointer-events: none;
     }
 
-    .course-card:hover,
+    .course-card.is-current,
     .course-card:focus-visible {
-      transform: translateY(-3px);
       border-color: color-mix(in srgb, var(--accent), transparent 30%);
-      background: rgba(255, 255, 255, 0.92);
+      background: #fff;
       box-shadow: 0 9px 18px rgba(32, 44, 58, 0.14);
     }
 
@@ -351,17 +400,7 @@
       line-height: 1.2;
     }
 
-    @media (min-width: 1320px) {
-      .course-grid {
-        grid-auto-columns: calc((100% - 3 * var(--gap)) / 4);
-      }
-    }
-
     @media (max-width: 600px) {
-      .course-grid {
-        grid-auto-columns: min(440px, calc(100% - 22px));
-      }
-
       .course-body {
         gap: 8px;
       }
@@ -373,6 +412,10 @@
     }
 
     @media (max-height: 520px) {
+      .course-grid {
+        padding-block: 12px 15px;
+      }
+
       .course-card {
         min-height: 208px;
         padding-block: 14px;
@@ -401,11 +444,6 @@
       .course-card {
         transition: none;
       }
-
-      .course-card:hover,
-      .course-card:focus-visible {
-        transform: none;
-      }
     }
   </style>
 </head>
@@ -419,18 +457,7 @@
 
   <div class="page">
     <main class="hero">
-      <section class="course-board" aria-labelledby="course-title">
-        <div class="board-header">
-          <h1 id="course-title">课程展台</h1>
-          <div class="board-nav" id="course-nav" role="group" aria-label="浏览课程" hidden>
-            <button id="course-prev" type="button" aria-label="向左浏览" aria-controls="course-grid">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
-            </button>
-            <button id="course-next" type="button" aria-label="向右浏览" aria-controls="course-grid">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
-            </button>
-          </div>
-        </div>
+      <section class="course-board" aria-label="课程">
         <div class="course-grid" id="course-grid">
           <a class="course-card cpp" href="https://pursuing-coding.github.io/cpp-learn/" target="_blank" rel="noreferrer">
             <div class="course-top">
@@ -510,6 +537,15 @@
             </div>
           </a>
         </div>
+        <div class="board-nav" id="course-nav" role="group" aria-label="切换课程" hidden>
+          <button class="board-arrow" id="course-prev" type="button" aria-label="上一门课程" aria-controls="course-grid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+          </button>
+          <div class="course-positions" id="course-positions"></div>
+          <button class="board-arrow" id="course-next" type="button" aria-label="下一门课程" aria-controls="course-grid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+          </button>
+        </div>
       </section>
     </main>
   </div>
@@ -519,68 +555,213 @@
     (() => {
       const rail = document.querySelector("#course-grid");
       const nav = document.querySelector("#course-nav");
-      const previous = document.querySelector("#course-prev");
-      const next = document.querySelector("#course-next");
+      const positions = document.querySelector("#course-positions");
       const cards = [...rail.querySelectorAll(".course-card")];
       const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-      let target = null;
-      let scrollSettled;
+      const turn = 2 * Math.PI / cards.length;
+      const wrap = index => (index % cards.length + cards.length) % cards.length;
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+      let position = 0;
+      let target = 0;
+      let velocity = 0;
+      let radius;
+      let stepWidth;
+      let frame = 0;
+      let frameTime = 0;
+      let wheelTimer = 0;
+      let wheelStart = null;
+      let drag = null;
+      let suppressClick = false;
 
-      function maxScroll() {
-        return rail.scrollWidth - rail.clientWidth;
+      const buttons = cards.map((card, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "course-position";
+        button.setAttribute("aria-label", card.querySelector("h2").textContent);
+        button.addEventListener("click", () => select(index));
+        positions.append(button);
+        return button;
+      });
+
+      function render() {
+        for (const [index, card] of cards.entries()) {
+          const angle = (index - position) * turn;
+          const side = Math.sin(angle);
+          const depth = (1 - Math.cos(angle)) / 2;
+          card.style.transform = `translate3d(${radius * side}px, ${8 * depth}px, ${-210 * depth}px)
+            rotateY(${22 * side}deg) scale(${1 - 0.25 * depth})`;
+          card.style.opacity = 1 - 0.48 * depth;
+          card.style.zIndex = Math.round(100 * (1 - depth));
+          card.style.pointerEvents = depth > 0.84 ? "none" : "";
+        }
       }
 
-      function updateControls() {
-        const limit = maxScroll();
-        const hideControls = limit <= 2;
-        if (hideControls && nav.contains(document.activeElement)) cards[0].focus();
-        nav.hidden = hideControls;
-        rail.tabIndex = nav.hidden ? -1 : 0;
-        previous.setAttribute("aria-disabled", String(rail.scrollLeft <= 2));
-        next.setAttribute("aria-disabled", String(rail.scrollLeft >= limit - 2));
+      function measure() {
+        const width = cards[0].offsetWidth;
+        radius = width * 0.82;
+        stepWidth = Math.min(width * 0.78, 285);
+        render();
+      }
+
+      function markCurrent() {
+        const active = wrap(target);
+        cards.forEach((card, index) => {
+          card.classList.toggle("is-current", index === active);
+          card.tabIndex = index === active ? 0 : -1;
+          buttons[index].setAttribute("aria-current", String(active === index));
+        });
+      }
+
+      function stop() {
+        cancelAnimationFrame(frame);
+        frame = 0;
+        frameTime = 0;
+        velocity = 0;
+      }
+
+      function animate(now) {
+        const elapsed = frameTime ? clamp((now - frameTime) / 1000, 0, 0.035) : 1 / 60;
+        frameTime = now;
+        const steps = Math.max(1, Math.ceil(elapsed / (1 / 120)));
+        const dt = elapsed / steps;
+        for (let step = 0; step < steps; step++) {
+          // A damped spring gives the front card a small overshoot as it settles.
+          velocity += ((target - position) * 180 - velocity * 20) * dt;
+          position += velocity * dt;
+        }
+        if (Math.abs(position - target) < 0.001 && Math.abs(velocity) < 0.012) {
+          stop();
+          position = target = wrap(target);
+        } else {
+          frame = requestAnimationFrame(animate);
+        }
+        render();
+      }
+
+      function clearWheel() {
+        clearTimeout(wheelTimer);
+        wheelStart = null;
+      }
+
+      function goTo(next, impulse = 0) {
+        clearWheel();
+        target = next;
+        markCurrent();
+        if (reducedMotion.matches) {
+          stop();
+          position = target = wrap(target);
+          render();
+          return;
+        }
+        velocity = clamp(velocity + impulse, -5, 5);
+        if (!frame) frame = requestAnimationFrame(animate);
+      }
+
+      function select(index) {
+        const closest = index + Math.round((position - index) / cards.length) * cards.length;
+        goTo(closest);
       }
 
       function move(direction) {
-        const limit = maxScroll();
-        const start = cards[0].offsetLeft;
-        const stops = cards.map(card => Math.min(limit, card.offsetLeft - start));
-        const position = target ?? rail.scrollLeft;
-        const destination = direction === 1
-          ? stops.find(stop => stop > position + 2)
-          : stops.findLast(stop => stop < position - 2);
-        if (destination === undefined) return;
-        goTo(destination);
+        goTo((wheelStart === null ? target : Math.round(position)) + direction);
       }
 
-      function goTo(destination) {
-        target = destination;
-        rail.scrollTo({ left: destination, behavior: reducedMotion.matches ? "instant" : "smooth" });
-        scheduleUpdate();
+      function releaseFrom(start, impulse = 0) {
+        const travel = position - start;
+        const base = Math.round(start);
+        let next = Math.round(position + clamp(impulse * 0.09, -0.35, 0.35));
+        if (next === base && Math.abs(travel) > 0.2) next += Math.sign(travel);
+        goTo(next, impulse);
       }
 
-      function scheduleUpdate() {
-        updateControls();
-        clearTimeout(scrollSettled);
-        scrollSettled = setTimeout(() => { target = null; }, 220);
-      }
+      document.querySelector("#course-prev").addEventListener("click", () => move(-1));
+      document.querySelector("#course-next").addEventListener("click", () => move(1));
 
-      previous.addEventListener("click", () => move(-1));
-      next.addEventListener("click", () => move(1));
-      rail.addEventListener("scroll", scheduleUpdate, { passive: true });
-      rail.addEventListener("keydown", event => {
-        if (event.altKey || event.ctrlKey || event.metaKey || maxScroll() <= 2) return;
+      rail.closest(".course-board").addEventListener("keydown", event => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
         if (event.key === "ArrowLeft") move(-1);
         else if (event.key === "ArrowRight") move(1);
-        else if (event.key === "Home") goTo(0);
-        else if (event.key === "End") goTo(maxScroll());
+        else if (event.key === "Home") select(0);
+        else if (event.key === "End") select(cards.length - 1);
         else return;
         event.preventDefault();
+        if (cards.includes(event.target)) cards[wrap(target)].focus({ preventScroll: true });
       });
-      new ResizeObserver(() => {
-        target = null;
-        updateControls();
-      }).observe(rail);
-      updateControls();
+
+      rail.addEventListener("wheel", event => {
+        if (event.ctrlKey || event.metaKey || drag?.moved || Math.abs(event.deltaX) < Math.max(1, Math.abs(event.deltaY))) return;
+        event.preventDefault();
+        if (wheelStart === null) {
+          stop();
+          wheelStart = position;
+        }
+        const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? rail.clientWidth : 1;
+        position += clamp(event.deltaX * unit / stepWidth, -0.7, 0.7);
+        if (!reducedMotion.matches) render();
+        clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(() => releaseFrom(wheelStart), 110);
+      }, { passive: false });
+
+      rail.addEventListener("pointerdown", event => {
+        if (!event.isPrimary || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        suppressClick = false;
+        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, lastX: event.clientX, time: event.timeStamp, speed: 0, moved: false };
+      });
+
+      rail.addEventListener("pointermove", event => {
+        if (drag?.id !== event.pointerId) return;
+        const distance = event.clientX - drag.x;
+        if (!drag.moved) {
+          if (Math.abs(distance) < Math.max(7, Math.abs(event.clientY - drag.y))) return;
+          stop();
+          clearWheel();
+          drag.start = position;
+          drag.moved = true;
+          rail.classList.add("is-dragging");
+          rail.setPointerCapture(event.pointerId);
+        }
+        const dt = Math.max(12, event.timeStamp - drag.time);
+        drag.speed = drag.speed * 0.35 + (drag.lastX - event.clientX) / stepWidth * (650 / dt);
+        drag.lastX = event.clientX;
+        drag.time = event.timeStamp;
+        position = drag.start - distance / stepWidth;
+        if (!reducedMotion.matches) render();
+      });
+
+      function endDrag(event) {
+        if (drag?.id !== event.pointerId) return;
+        if (drag.moved) {
+          suppressClick = true;
+          rail.classList.remove("is-dragging");
+          const impulse = event.type === "pointerup" && event.timeStamp - drag.time < 95 ? drag.speed : 0;
+          releaseFrom(drag.start, impulse);
+        }
+        drag = null;
+      }
+
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("pointercancel", endDrag);
+      rail.addEventListener("lostpointercapture", endDrag);
+      rail.addEventListener("dragstart", event => event.preventDefault());
+      rail.addEventListener("click", event => {
+        if (suppressClick && event.detail > 0) {
+          event.preventDefault();
+          suppressClick = false;
+          return;
+        }
+        const card = event.target.closest(".course-card");
+        if (!card || card.classList.contains("is-current") || event.detail === 0 ||
+            event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        event.preventDefault();
+        select(cards.indexOf(card));
+      });
+
+      reducedMotion.addEventListener("change", () => goTo(target));
+      rail.classList.add("is-carousel");
+      nav.hidden = false;
+      markCurrent();
+      measure();
+      new ResizeObserver(measure).observe(rail);
     })();
 
     (function () {
