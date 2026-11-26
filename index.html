@@ -452,6 +452,8 @@
       var height = 0;
       var pointer = { x: 0, y: 0 };
       var animationFrame = 0;
+      var previousDraw = null;
+      var frameInterval = 1000 / 30;
       function requestDraw() {
         if (!document.hidden && !animationFrame) {
           animationFrame = window.requestAnimationFrame(draw);
@@ -468,6 +470,7 @@
         canvas.style.height = height + "px";
         context.setTransform(ratio, 0, 0, ratio, 0, 0);
         createPoints();
+        previousDraw = null;
         requestDraw();
       }
 
@@ -485,8 +488,15 @@
         });
       }
 
-      function draw() {
+      function draw(timestamp) {
         animationFrame = 0;
+        var elapsed = previousDraw === null ? frameInterval : timestamp - previousDraw;
+        if (!mediaQuery.matches && elapsed < frameInterval - 1) {
+          requestDraw();
+          return;
+        }
+        previousDraw = timestamp;
+        var step = Math.min(elapsed, 50) / (1000 / 60);
         context.clearRect(0, 0, width, height);
         context.fillStyle = "#f5f7f2";
         context.fillRect(0, 0, width, height);
@@ -516,8 +526,8 @@
         for (var i = 0; i < points.length; i += 1) {
           var point = points[i];
           if (!mediaQuery.matches) {
-            point.x += point.vx;
-            point.y += point.vy;
+            point.x += point.vx * step;
+            point.y += point.vy * step;
             if (point.x < -80) point.x = width + 80;
             if (point.x > width + 80) point.x = -80;
             if (point.y < -40) point.y = height + 40;
@@ -561,11 +571,15 @@
 
       resize();
 
-      mediaQuery.addEventListener("change", requestDraw);
+      mediaQuery.addEventListener("change", function () {
+        previousDraw = null;
+        requestDraw();
+      });
       document.addEventListener("visibilitychange", function () {
         if (document.hidden) {
           window.cancelAnimationFrame(animationFrame);
           animationFrame = 0;
+          previousDraw = null;
         } else {
           requestDraw();
         }
