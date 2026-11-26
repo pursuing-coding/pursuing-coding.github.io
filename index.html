@@ -14,12 +14,10 @@
       --muted: #607080;
       --line: rgba(21, 32, 43, 0.14);
       --panel: rgba(255, 255, 255, 0.82);
-      --panel-strong: #ffffff;
       --blue: #2764d8;
       --teal: #1f8f78;
       --amber: #b36b16;
       --rose: #b23a48;
-      --shadow: 0 18px 48px rgba(32, 44, 58, 0.12);
       --radius: 8px;
       --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
         "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Noto Sans SC",
@@ -68,8 +66,9 @@
       z-index: 1;
       flex: 1;
       display: grid;
-      place-items: center;
-      padding: clamp(16px, 3vw, 42px) clamp(20px, 5vw, 72px);
+      align-items: center;
+      min-width: 0;
+      padding-block: clamp(14px, 4svh, 38px);
     }
 
     .corner-brand {
@@ -114,39 +113,106 @@
     }
 
     .hero {
-      width: min(920px, 100%);
+      --gutter: clamp(16px, 4vw, 56px);
+      width: min(100%, 1520px);
       min-width: 0;
+      margin-inline: auto;
     }
 
     .course-board {
-      position: relative;
       min-width: 0;
+    }
+
+    .board-header {
+      min-height: 44px;
+      margin-inline: var(--gutter);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .board-header h1 {
+      margin: 0;
+      font-size: clamp(22px, 2.6vw, 34px);
+      font-weight: 650;
+      letter-spacing: -0.035em;
+    }
+
+    .board-nav {
+      display: flex;
+      gap: 8px;
+    }
+
+    .board-nav[hidden] {
+      display: none;
+    }
+
+    .board-nav button {
       display: grid;
-      gap: 16px;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .board-nav button:hover:not([aria-disabled="true"]) {
+      background: #fff;
+      border-color: var(--muted);
+    }
+
+    .board-nav button[aria-disabled="true"] {
+      opacity: 0.42;
+      cursor: default;
+    }
+
+    .board-nav button:focus-visible,
+    .course-grid:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: -3px;
+    }
+
+    .board-nav svg {
+      width: 18px;
+      height: 18px;
     }
 
     .course-grid {
+      --gap: clamp(12px, 2vw, 22px);
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: clamp(18px, 2.6vw, 28px);
+      grid-auto-flow: column;
+      grid-auto-columns: clamp(278px, 32vw, 360px);
+      gap: var(--gap);
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      scrollbar-width: thin;
+      scrollbar-color: #b6c0bc transparent;
+      padding: 14px var(--gutter) 22px;
     }
 
     .course-card {
       position: relative;
-      min-height: 240px;
-      padding: clamp(22px, 2.6vw, 28px);
+      min-width: 0;
+      min-height: clamp(226px, 39svh, 340px);
+      padding: clamp(18px, 2.2vw, 28px);
+      scroll-snap-align: start;
       border: 1px solid rgba(21, 32, 43, 0.12);
-      border-radius: var(--radius);
+      border-radius: 14px;
       background: var(--panel);
       color: var(--ink);
       text-decoration: none;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
+      box-shadow: 0 6px 16px rgba(32, 44, 58, 0.09);
       overflow: hidden;
       display: grid;
       grid-template-rows: auto 1fr auto;
       align-content: start;
-      gap: 20px;
+      gap: clamp(14px, 2.8svh, 26px);
       transition:
         transform 180ms ease,
         border-color 180ms ease,
@@ -173,10 +239,10 @@
 
     .course-card:hover,
     .course-card:focus-visible {
-      transform: translateY(-5px);
+      transform: translateY(-3px);
       border-color: color-mix(in srgb, var(--accent), transparent 30%);
       background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 28px 70px rgba(32, 44, 58, 0.18);
+      box-shadow: 0 9px 18px rgba(32, 44, 58, 0.14);
     }
 
     .course-card:focus-visible {
@@ -215,8 +281,8 @@
     }
 
     .language-badge {
-      width: 58px;
-      height: 58px;
+      width: 50px;
+      height: 50px;
       border-radius: var(--radius);
       display: grid;
       place-items: center;
@@ -254,17 +320,17 @@
     .course-body h2 {
       margin: 0;
       max-width: 9em;
-      font-size: clamp(27px, 3vw, 36px);
+      font-size: clamp(23px, 2.35vw, 34px);
       font-weight: 640;
       line-height: 1.14;
       letter-spacing: 0;
     }
 
     .course-body p {
-      max-width: 15.5em;
+      max-width: 20em;
       margin: 0;
       color: #4b5e70;
-      font-size: clamp(14px, 1.45vw, 17px);
+      font-size: clamp(14px, 1.2vw, 16px);
       font-weight: 400;
       line-height: 1.78;
     }
@@ -285,38 +351,49 @@
       line-height: 1.2;
     }
 
-    @media (max-width: 620px) {
+    @media (min-width: 1320px) {
       .course-grid {
-        grid-template-columns: 1fr;
+        grid-auto-columns: calc((100% - 3 * var(--gap)) / 4);
       }
     }
 
-    @media (max-width: 640px) {
-      .page {
-        padding: 24px 20px;
+    @media (max-width: 600px) {
+      .course-grid {
+        grid-auto-columns: min(440px, calc(100% - 22px));
       }
 
-      .signature {
-        font-size: 11px;
+      .course-body {
+        gap: 8px;
       }
 
+      .tag {
+        padding: 5px 8px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-height: 520px) {
       .course-card {
-        min-height: 220px;
-        padding: 18px;
+        min-height: 208px;
+        padding-block: 14px;
+        gap: 10px;
       }
 
       .language-badge {
-        width: 58px;
-        height: 58px;
-        font-size: 18px;
+        width: 40px;
+        height: 40px;
       }
 
-      .course-body h2 {
-        font-size: clamp(28px, 7.4vw, 31px);
+      .course-body {
+        gap: 5px;
       }
 
       .course-body p {
-        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .signature {
+        margin-bottom: 12px;
       }
     }
 
@@ -342,8 +419,19 @@
 
   <div class="page">
     <main class="hero">
-      <section class="course-board" aria-label="课程入口">
-        <div class="course-grid">
+      <section class="course-board" aria-labelledby="course-title">
+        <div class="board-header">
+          <h1 id="course-title">课程展台</h1>
+          <div class="board-nav" id="course-nav" role="group" aria-label="浏览课程" hidden>
+            <button id="course-prev" type="button" aria-label="向左浏览" aria-controls="course-grid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+            </button>
+            <button id="course-next" type="button" aria-label="向右浏览" aria-controls="course-grid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="course-grid" id="course-grid">
           <a class="course-card cpp" href="https://pursuing-coding.github.io/cpp-learn/" target="_blank" rel="noreferrer">
             <div class="course-top">
               <span class="language-badge">C++</span>
@@ -356,7 +444,7 @@
             </div>
             <div class="course-body">
               <h2>C++ 在线实验室</h2>
-              <p>从编译模型、类型系统到 STL 与现代 C++，进入完整的浏览器课程实验室。</p>
+              <p>从编译模型和类型系统入手，练习 STL、内存管理和现代 C++。</p>
             </div>
             <div class="course-tags" aria-label="C++ 课程标签">
               <span class="tag">13 章</span>
@@ -367,7 +455,7 @@
 
           <a class="course-card java" href="https://pursuing-coding.github.io/java-path/" target="_blank" rel="noreferrer">
             <div class="course-top">
-              <span class="language-badge">JAVA</span>
+              <span class="language-badge">Java</span>
               <span class="external-mark" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M7 17 17 7"></path>
@@ -377,10 +465,10 @@
             </div>
             <div class="course-body">
               <h2>Java 学习路径</h2>
-              <p>按 Level 推进 Java 基础、工程实践、后端框架与综合练习，适合长期闯关学习。</p>
+              <p>从基础语法到工程实践，逐关学习 Java 和后端框架。</p>
             </div>
             <div class="course-tags" aria-label="Java 课程标签">
-              <span class="tag">13 Level</span>
+              <span class="tag">13 个阶段</span>
               <span class="tag">104 关</span>
               <span class="tag">学习路径</span>
             </div>
@@ -428,6 +516,73 @@
   <footer class="signature">Developed by WJH</footer>
 
   <script>
+    (() => {
+      const rail = document.querySelector("#course-grid");
+      const nav = document.querySelector("#course-nav");
+      const previous = document.querySelector("#course-prev");
+      const next = document.querySelector("#course-next");
+      const cards = [...rail.querySelectorAll(".course-card")];
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      let target = null;
+      let scrollSettled;
+
+      function maxScroll() {
+        return rail.scrollWidth - rail.clientWidth;
+      }
+
+      function updateControls() {
+        const limit = maxScroll();
+        const hideControls = limit <= 2;
+        if (hideControls && nav.contains(document.activeElement)) cards[0].focus();
+        nav.hidden = hideControls;
+        rail.tabIndex = nav.hidden ? -1 : 0;
+        previous.setAttribute("aria-disabled", String(rail.scrollLeft <= 2));
+        next.setAttribute("aria-disabled", String(rail.scrollLeft >= limit - 2));
+      }
+
+      function move(direction) {
+        const limit = maxScroll();
+        const start = cards[0].offsetLeft;
+        const stops = cards.map(card => Math.min(limit, card.offsetLeft - start));
+        const position = target ?? rail.scrollLeft;
+        const destination = direction === 1
+          ? stops.find(stop => stop > position + 2)
+          : stops.findLast(stop => stop < position - 2);
+        if (destination === undefined) return;
+        goTo(destination);
+      }
+
+      function goTo(destination) {
+        target = destination;
+        rail.scrollTo({ left: destination, behavior: reducedMotion.matches ? "instant" : "smooth" });
+        scheduleUpdate();
+      }
+
+      function scheduleUpdate() {
+        updateControls();
+        clearTimeout(scrollSettled);
+        scrollSettled = setTimeout(() => { target = null; }, 220);
+      }
+
+      previous.addEventListener("click", () => move(-1));
+      next.addEventListener("click", () => move(1));
+      rail.addEventListener("scroll", scheduleUpdate, { passive: true });
+      rail.addEventListener("keydown", event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || maxScroll() <= 2) return;
+        if (event.key === "ArrowLeft") move(-1);
+        else if (event.key === "ArrowRight") move(1);
+        else if (event.key === "Home") goTo(0);
+        else if (event.key === "End") goTo(maxScroll());
+        else return;
+        event.preventDefault();
+      });
+      new ResizeObserver(() => {
+        target = null;
+        updateControls();
+      }).observe(rail);
+      updateControls();
+    })();
+
     (function () {
       var canvas = document.getElementById("scene");
       var context = canvas.getContext("2d");
