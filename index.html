@@ -172,10 +172,12 @@
 
     .course-position::before {
       content: "";
-      width: 7px;
+      width: 18px;
       height: 7px;
       border-radius: 5px;
       background: currentColor;
+      transform: scaleX(0.4);
+      transition: transform 200ms ease, background-color 200ms ease;
     }
 
     .course-position[aria-current="true"] {
@@ -183,7 +185,7 @@
     }
 
     .course-position[aria-current="true"]::before {
-      width: 18px;
+      transform: scaleX(1);
     }
 
     .board-nav button:focus-visible {
@@ -225,7 +227,10 @@
       width: min(416px, calc(100% - clamp(40px, 10vw, 80px)));
       grid-area: 1 / 1;
       justify-self: center;
+      border-color: color-mix(in srgb, var(--accent), transparent 83%);
+      background: #fff;
       cursor: grab;
+      will-change: transform, opacity;
     }
 
     .is-carousel .course-card.is-current {
@@ -236,8 +241,8 @@
       cursor: grabbing;
     }
 
-    .is-carousel .course-card:not(.is-current) .external-mark {
-      visibility: hidden;
+    .is-carousel .external-mark {
+      opacity: var(--front, 0);
     }
 
     @media (max-width: 640px) {
@@ -287,7 +292,6 @@
       pointer-events: none;
     }
 
-    .course-card.is-current,
     .course-card:focus-visible {
       border-color: color-mix(in srgb, var(--accent), transparent 30%);
       background: #fff;
@@ -441,6 +445,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
+      .course-position::before,
       .course-card {
         transition: none;
       }
@@ -568,8 +573,9 @@
       let stepWidth;
       let frame = 0;
       let frameTime = 0;
+      let moving = false;
       let wheelTimer = 0;
-      let wheelStart = null;
+      let wheel = null;
       let drag = null;
       let suppressClick = false;
 
@@ -591,6 +597,7 @@
           card.style.transform = `translate3d(${radius * side}px, ${8 * depth}px, ${-210 * depth}px)
             rotateY(${22 * side}deg) scale(${1 - 0.25 * depth})`;
           card.style.opacity = 1 - 0.48 * depth;
+          card.style.setProperty("--front", Math.max(0, Math.cos(angle)) ** 3);
           card.style.zIndex = Math.round(100 * (1 - depth));
           card.style.pointerEvents = depth > 0.84 ? "none" : "";
         }
@@ -612,49 +619,74 @@
         });
       }
 
-      function stop() {
-        cancelAnimationFrame(frame);
-        frame = 0;
-        frameTime = 0;
-        velocity = 0;
+      function setMoving(value) {
+        if (moving === value) return;
+        moving = value;
+        document.dispatchEvent(new CustomEvent("course-motion", { detail: value }));
+      }
+
+      function requestFrame(now = performance.now()) {
+        if (frame) return;
+        frameTime = now;
+        setMoving(true);
+        frame = requestAnimationFrame(animate);
       }
 
       function animate(now) {
-        const elapsed = frameTime ? clamp((now - frameTime) / 1000, 0, 0.035) : 1 / 60;
-        frameTime = now;
-        const steps = Math.max(1, Math.ceil(elapsed / (1 / 120)));
-        const dt = elapsed / steps;
-        for (let step = 0; step < steps; step++) {
-          // A damped spring gives the front card a small overshoot as it settles.
-          velocity += ((target - position) * 180 - velocity * 20) * dt;
-          position += velocity * dt;
-        }
-        if (Math.abs(position - target) < 0.001 && Math.abs(velocity) < 0.012) {
-          stop();
-          position = target = wrap(target);
+        frame = 0;
+        const elapsed = Math.max(0, (now - frameTime) / 1000);
+        const input = drag?.moved ? drag : wheel;
+        let needsFrame;
+
+        if (input) {
+          // Input events can arrive between refreshes. Follow the latest position once per frame.
+          const gap = input.position - position;
+          needsFrame = Math.abs(gap) > 0.0005;
+          position = needsFrame ? position - gap * Math.expm1(-elapsed / 0.013) : input.position;
         } else {
-          frame = requestAnimationFrame(animate);
+          const decay = 11;
+          const frequency = 8.3;
+          const offset = position - target;
+          const slope = (velocity + decay * offset) / frequency;
+          const phase = frequency * elapsed;
+          const sin = Math.sin(phase);
+          const cos = Math.cos(phase);
+          const envelope = Math.exp(-decay * elapsed);
+          const wave = offset * cos + slope * sin;
+          position = target + envelope * wave;
+          velocity = envelope * (frequency * (slope * cos - offset * sin) - decay * wave);
+          needsFrame = Math.abs(position - target) > 0.0005 || Math.abs(velocity) > 0.008;
+          if (!needsFrame) {
+            position = target = wrap(target);
+            velocity = 0;
+            setMoving(false);
+          }
         }
+
         render();
+        if (needsFrame) requestFrame(now);
       }
 
       function clearWheel() {
         clearTimeout(wheelTimer);
-        wheelStart = null;
+        wheel = null;
       }
 
-      function goTo(next, impulse = 0) {
+      function goTo(next, impulse = velocity) {
         clearWheel();
         target = next;
         markCurrent();
         if (reducedMotion.matches) {
-          stop();
+          cancelAnimationFrame(frame);
+          frame = 0;
+          velocity = 0;
           position = target = wrap(target);
+          setMoving(false);
           render();
           return;
         }
-        velocity = clamp(velocity + impulse, -5, 5);
-        if (!frame) frame = requestAnimationFrame(animate);
+        velocity = clamp(impulse, -6, 6);
+        requestFrame();
       }
 
       function select(index) {
@@ -663,15 +695,26 @@
       }
 
       function move(direction) {
-        goTo((wheelStart === null ? target : Math.round(position)) + direction);
+        goTo((wheel ? Math.round(wheel.position) : target) + direction);
       }
 
-      function releaseFrom(start, impulse = 0) {
-        const travel = position - start;
-        const base = Math.round(start);
-        let next = Math.round(position + clamp(impulse * 0.09, -0.35, 0.35));
+      function followGesture(gesture, next, now) {
+        const elapsed = Math.max(5, now - gesture.time);
+        const speed = clamp((next - gesture.position) * 1000 / elapsed, -9, 9);
+        gesture.speed += (speed - gesture.speed) * -Math.expm1(-elapsed / 32);
+        gesture.position = next;
+        gesture.time = now;
+        if (!reducedMotion.matches) requestFrame(now);
+      }
+
+      function releaseGesture(gesture, momentum) {
+        const travel = gesture.position - gesture.start;
+        const base = Math.round(gesture.start);
+        const idle = performance.now() - gesture.time;
+        const speed = momentum ? gesture.speed * Math.exp(-idle / 70) : 0;
+        let next = Math.round(gesture.position + clamp(speed * 0.075, -0.32, 0.32));
         if (next === base && Math.abs(travel) > 0.2) next += Math.sign(travel);
-        goTo(next, impulse);
+        goTo(next, speed);
       }
 
       document.querySelector("#course-prev").addEventListener("click", () => move(-1));
@@ -689,23 +732,25 @@
       });
 
       rail.addEventListener("wheel", event => {
-        if (event.ctrlKey || event.metaKey || drag?.moved || Math.abs(event.deltaX) < Math.max(1, Math.abs(event.deltaY))) return;
+        const { deltaX, deltaY } = event;
+        if (event.ctrlKey || event.metaKey || drag?.moved || !deltaX ||
+            (!wheel && Math.abs(deltaX) < Math.max(1, Math.abs(deltaY)))) return;
         event.preventDefault();
-        if (wheelStart === null) {
-          stop();
-          wheelStart = position;
+        const now = performance.now();
+        if (!wheel) {
+          wheel = { start: position, position, speed: 0, time: now - 16 };
+          velocity = 0;
         }
-        const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? rail.clientWidth : 1;
-        position += clamp(event.deltaX * unit / stepWidth, -0.7, 0.7);
-        if (!reducedMotion.matches) render();
+        const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stepWidth : 1;
+        followGesture(wheel, wheel.position + clamp(deltaX * unit / stepWidth, -1, 1), now);
         clearTimeout(wheelTimer);
-        wheelTimer = setTimeout(() => releaseFrom(wheelStart), 110);
+        wheelTimer = setTimeout(() => releaseGesture(wheel, true), 80);
       }, { passive: false });
 
       rail.addEventListener("pointerdown", event => {
         if (!event.isPrimary || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         suppressClick = false;
-        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, lastX: event.clientX, time: event.timeStamp, speed: 0, moved: false };
+        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, time: performance.now(), speed: 0, moved: false };
       });
 
       rail.addEventListener("pointermove", event => {
@@ -713,30 +758,24 @@
         const distance = event.clientX - drag.x;
         if (!drag.moved) {
           if (Math.abs(distance) < Math.max(7, Math.abs(event.clientY - drag.y))) return;
-          stop();
           clearWheel();
-          drag.start = position;
+          velocity = 0;
+          drag.start = drag.position = position;
           drag.moved = true;
           rail.classList.add("is-dragging");
           rail.setPointerCapture(event.pointerId);
         }
-        const dt = Math.max(12, event.timeStamp - drag.time);
-        drag.speed = drag.speed * 0.35 + (drag.lastX - event.clientX) / stepWidth * (650 / dt);
-        drag.lastX = event.clientX;
-        drag.time = event.timeStamp;
-        position = drag.start - distance / stepWidth;
-        if (!reducedMotion.matches) render();
+        followGesture(drag, drag.start - distance / stepWidth, performance.now());
       });
 
       function endDrag(event) {
         if (drag?.id !== event.pointerId) return;
-        if (drag.moved) {
-          suppressClick = true;
-          rail.classList.remove("is-dragging");
-          const impulse = event.type === "pointerup" && event.timeStamp - drag.time < 95 ? drag.speed : 0;
-          releaseFrom(drag.start, impulse);
-        }
+        const gesture = drag;
         drag = null;
+        if (!gesture.moved) return;
+        suppressClick = true;
+        rail.classList.remove("is-dragging");
+        releaseGesture(gesture, event.type === "pointerup");
       }
 
       window.addEventListener("pointerup", endDrag);
@@ -789,9 +828,10 @@
       var pointer = { x: 0, y: 0 };
       var animationFrame = 0;
       var previousDraw = null;
+      var foregroundMoving = false;
       var frameInterval = 1000 / 30;
       function requestDraw() {
-        if (!document.hidden && !animationFrame) {
+        if (!document.hidden && !animationFrame && !foregroundMoving) {
           animationFrame = window.requestAnimationFrame(draw);
         }
       }
@@ -807,7 +847,8 @@
         context.setTransform(ratio, 0, 0, ratio, 0, 0);
         createPoints();
         previousDraw = null;
-        requestDraw();
+        if (foregroundMoving) draw(performance.now());
+        else requestDraw();
       }
 
       function createPoints() {
@@ -907,6 +948,13 @@
 
       resize();
 
+      document.addEventListener("course-motion", function (event) {
+        foregroundMoving = event.detail;
+        cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+        previousDraw = null;
+        requestDraw();
+      });
       mediaQuery.addEventListener("change", function () {
         previousDraw = null;
         requestDraw();
